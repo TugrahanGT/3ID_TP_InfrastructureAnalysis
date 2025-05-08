@@ -1,0 +1,232 @@
+<!-- index.html (Dashboard Page) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status - Triple-ID</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Navbar Include -->
+  <div id="navbar-placeholder"></div>
+
+  <main class="container">
+    <div class="row">
+      <section class="graphCard">
+        <h2>NIST Compliance Status</h2>
+        <div class="chart-container">
+          <canvas id="complianceChart"></canvas>
+        </div>
+        <p><strong>Violations:</strong></p>
+        <ul>
+          <li>Access control audit logs not retained longer than 90 days</li>
+          <li>Weak password policy detected on two user accounts</li>
+        </ul>
+      </section>
+
+      <section class="graphCard">
+        <h2>Windows Firewall Traffic</h2>
+        <div class="chart-container">
+          <canvas id="firewallChart"></canvas>
+        </div>
+        <p><strong>Blocked Traffics:</strong></p>
+        <ul>
+          <li>1.200 incoming traffics are blocked.</li>
+          <li>300 them from the same IP address, so the IP address 192.168.1.1 is blocked.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="row">
+      <section class="graphCard">
+        <h2>Application Logs</h2>
+        <div class="chart-container">
+          <canvas id="eventChart"></canvas>
+        </div>
+        <p><strong>Error Logs:</strong></p>
+        <ul>
+          <li>There are 20 application error logs observed.</li>
+          <li>The errors seems to be occurred because of high RAM usage.</li>
+        </ul>
+      </section>
+
+      <section class="graphCard">
+        <h2>System Update Status</h2>
+        <canvas id="systemUpdatesChart"></canvas>
+        <p><strong>Update Details:</strong></p>
+        <ul>
+          <li>In total 32 updates were provided within the last week.</li>
+          <li>In total 16 updates were installed.</li>
+          <li>In total 16 updates were not installed.</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="row">
+      <section class="graphCard full-width">
+        <h2>Hardware Usage</h2>
+        <div class="chart-container">
+          <canvas id="hardwareChart"></canvas>
+        </div>
+        <p><strong>Usage Details:</strong></p>
+        <ul>
+          <li>The CPU and RAM usage is above the allowed limit.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer Include -->
+  <div id="footer-placeholder"></div>
+
+  <script src="{{ url_for('static', filename='js/components.js') }}"></script>
+  <script>
+    const complianceChart = new Chart(document.getElementById('complianceChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Followed', 'Violated'],
+        datasets: [{
+          data: [10, 2],
+          backgroundColor: ['#4caf50', '#f44336']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        }
+      }
+    });
+
+    const firewallChart = new Chart(document.getElementById('firewallChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Allowed', 'Blocked'],
+        datasets: [
+          {
+            label: 'Allowed',
+            data: [3200, 0],
+            backgroundColor: '#4caf50'
+          },
+          {
+            label: 'Blocked',
+            data: [0, 1200],
+            backgroundColor: '#f44336'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top'
+          }
+        },
+        scales: {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true
+          }
+        }
+      }
+    });
+
+    const eventChart = new Chart(document.getElementById('eventChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Error Logs', 'Healthy'],
+        datasets: [{
+          data: [20, 80],
+          backgroundColor: ['#e53935', '#43a047']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+    const hardwareChart = new Chart(document.getElementById('hardwareChart'), {
+      type: 'line',
+      data: {
+        labels: ['00:00', '06:00', '12:00', '18:00', '24:00'],
+        datasets: [
+          {
+            label: 'CPU %',
+            data: [45, 65, 50, 70, 60],
+            borderColor: '#f44336',
+            fill: false
+          },
+          {
+            label: 'RAM %',
+            data: [50, 55, 60, 65, 63],
+            borderColor: '#3f51b5',
+            fill: false
+          },
+          {
+            label: 'Disk %',
+            data: [20, 30, 25, 35, 40],
+            borderColor: '#ff9800',
+            fill: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false
+      }
+    });
+
+      // Sample data for updates over the last 7 days
+  const providedUpdates = [3, 5, 2, 8, 6, 3, 4]; // Updates provided
+  const missingUpdates = [2, 1, 3, 1, 2, 4, 3];  // Updates missing
+  
+  // Days since Day X (mock data)
+  const days = ["01/05/2025", "02/05/2025", "03/05/2025", "04/05/2025", "05/05/2025", "06/05/2025", "07/05/2025"];
+  
+  // Chart.js - System Update Status Bar Chart
+  const ctx = document.getElementById('systemUpdatesChart').getContext('2d');
+  const systemUpdatesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: days,  // X-axis labels
+      datasets: [
+        {
+          label: 'Provided Updates',
+          data: providedUpdates, // Data for provided updates
+          backgroundColor: '#43a047', // Color for provided updates
+          borderColor: '#5c2a94',
+          borderWidth: 1,
+        },
+        {
+          label: 'Missing Updates',
+          data: missingUpdates,  // Data for missing updates
+          backgroundColor: '#e53935', // Color for missing updates
+          borderColor: '#2d2b7d',
+          borderWidth: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          beginAtZero: true,
+        },
+        y: {
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+  </script>
+</body>
+</html>
