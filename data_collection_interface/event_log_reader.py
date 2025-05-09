@@ -23,6 +23,18 @@ event_status_types = {
     WindowsConnection.EVENTLOG_ERROR_TYPE:'EVENTLOG_ERROR_TYPE'
 }  
 
+class Logging():
+    def __init__(self, log_path):
+        self.log_path = log_path
+        self.line_break = "-" * 80
+        open(log_path, "w").close()
+
+    def write_log(self, message):
+        logger = codecs.open(self.log_path, encoding="utf-8", mode="a")
+        logger.write(self.line_break)
+        logger.write("\n" + message + "\n")
+
+
 class EventObject():
     def __init__(self, id, type, timestamp, record, source, message):
         self.id = id
@@ -33,8 +45,8 @@ class EventObject():
         self.message = message
 
     def __str__(self):
-        return f"The event with ID: {self.id} and Type: {self.type} from the source {self.source} and record {self.record} \
-            is provided on {self.timestamp}.\nEvent message is: {self.message}\n"
+        return f"The event with ID: {self.id} and Type: {self.type} from the source {self.source} and record {self.record} " + \
+                f"is provided on {self.timestamp}.\nEvent message is: {self.message}\n"
     
     def get_json_event(self):
         return {
@@ -47,7 +59,9 @@ class EventObject():
         }
     
 
-def readEventLogs(target_name = "localhost", log_type = "Application", log_out_path = os.getcwd() + r"\logs.txt"):    
+def readEventLogs(target_name = "localhost", log_type = "Application", log_out_path = os.getcwd() + r"\logs.txt"):  
+    Logger = Logging(log_out_path)
+
     event_logs_result = {
         "Errors": {
             "Count": 0,
@@ -63,19 +77,14 @@ def readEventLogs(target_name = "localhost", log_type = "Application", log_out_p
         }
     }
 
-    logging = codecs.open(log_out_path, encoding="utf-8", mode="w")
-    line_break = "-" * 80 # For each line, as a separator
-
     if target_name == "localhost" or log_type == "Application":
-        logging.write(f"Either the target name or log type is not provided.\n")
-        logging.write(f"By default {target_name} will be used as a target name, and {log_type} will be used as a log type.\n")
+        Logger.write_log(f"Either the target name or log type is not provided.\n")
+        Logger.write_log(f"By default {target_name} will be used as a target name, and {log_type} will be used as a log type.\n")
     
-    logging.write("\n" + line_break + "\n")
-    logging.write(f"Logging the {log_type} logs!\n")
+    Logger.write_log(f"Logging the {log_type} logs!\n")
     eventLogs = WindowsEventLog.OpenEventLog(target_name, log_type)
     totalNrOfEventLogs = WindowsEventLog.GetNumberOfEventLogRecords(eventLogs)
-    logging.write(f"There are {totalNrOfEventLogs} of type {log_type}!\n")
-    logging.write("\n" + line_break + "\n")
+    Logger.write_log(f"There are {totalNrOfEventLogs} of type {log_type}!\n")
 
     flags = WindowsEventLog.EVENTLOG_BACKWARDS_READ | WindowsEventLog.EVENTLOG_SEQUENTIAL_READ
     test_id = 0
@@ -105,11 +114,11 @@ def readEventLogs(target_name = "localhost", log_type = "Application", log_out_p
                     event_logs_result["Errors"]["Count"] = event_logs_result["Errors"]["Count"] + 1
                     event_logs_result["Errors"]["Events"].append(newEventObject.get_json_event())
                 
-                logging.write(str(newEventObject))
-                logging.write("\n" + line_break + "\n")
-
+                Logger.write_log(str(newEventObject))
                 test_id = test_id + 1
     except:
         print(traceback.print_exc(sys.exc_info()))
 
     return event_logs_result
+
+result = readEventLogs()
