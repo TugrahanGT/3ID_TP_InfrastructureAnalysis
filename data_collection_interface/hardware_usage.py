@@ -2,8 +2,7 @@ import psutil
 from threading import Thread
 import os
 
-class ThreadWithReturnValue(Thread):
-    
+class ThreadWithReturnValue(Thread):    
     def __init__(self, group=None, target=None, name=None,
                  args=(), kwargs={}, Verbose=None):
         Thread.__init__(self, group, target, name, args, kwargs)
